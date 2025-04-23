@@ -9,11 +9,6 @@
 #  https://data-blog.gbif.org/post/gbif-filtering-guide/
 #. https://data-blog.gbif.org/post/downloading-long-species-lists-on-gbif/
 
-<<<<<<< HEAD
-=======
-###########
-
->>>>>>> xueyan
 ########### Setting ##############
 # Install and load packages
 install.packages("rgbif")
@@ -81,8 +76,6 @@ if (status$status == "SUCCEEDED"){
 } else {
   warning(sprintf("The request %s.", status$status))
   d <- NULL
-<<<<<<< HEAD
-=======
 }
 
 
@@ -150,5 +143,4 @@ if (status$status == "SUCCEEDED"){
 } else {
   warning(sprintf("The request %s.", status$status))
   d <- NULL
->>>>>>> xueyan
 }
