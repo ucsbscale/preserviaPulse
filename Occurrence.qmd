@@ -1,0 +1,96 @@
+---
+title: "Occurrence"
+format: html
+editor: visual
+---
+
+### 1. Get species list
+
+```{r}
+library(googledrive)
+library(googlesheets4)
+
+# Authoritization
+drive_auth()
+gs4_auth(token = drive_token())
+
+# Get data
+ss <- drive_get("Special Status Species")
+
+## E.g. sheet names
+ss_meta <- gs4_get(ss) 
+sheet_names <- ss_meta$sheets$name
+
+dat <- read_sheet(ss, sheet = sheet_names[1])
+head(dat)
+
+# Get species' names
+scientific_names_df <- dat[, c("Name (common)", "Name (Latin)")]
+
+# Use Latin name for searching
+scientific_names <- scientific_names_df$`Name (Latin)`
+
+```
+
+### 2. Get information from gbif
+
+```{r}
+pkgs <- c("here", "sf", "dplyr", "rgbif")
+for (pkg in pkgs){
+  if (!require(pkg, character.only = TRUE)) {
+    install.packages(pkg)
+    require(pkg, character.only = TRUE)
+  }
+}; rm(pkgs, pkg)
+
+# Set a directory for data
+#occ_dir <- here("/occurrences")
+#  if (!dir.exists(occ_dir)) dir.create(occ_dir)
+
+occ_dir <- "E:/OneDrive/UCSB/Class/GEOG274/code/GEOG274-XUE/data/occurrences"
+if (!dir.exists(occ_dir)) dir.create(occ_dir, recursive = TRUE)
+```
+
+```{r}
+# log in gbif
+install.packages("usethis")
+library(usethis)
+usethis::edit_r_environ() 
+
+#https://docs.ropensci.org/rgbif/articles/gbif_credentials.html
+```
+
+```{r}
+# Confirm names used in GBIF database for your species list
+gbif_names <- name_backbone_checklist(scientific_names)
+
+# Only keep valid records
+gbif_names <- gbif_names[!is.na(gbif_names$usageKey), ]
+
+# Spin up a download request for GBIF occurrence data
+# Reference
+# https://docs.ropensci.org/rgbif/articles/getting_occurrence_data.html
+# https://data-blog.gbif.org/post/downloading-long-species-lists-on-gbif/
+
+occ_meta <- occ_download(
+  pred_in("taxonKey", unique(gbif_names$usageKey)),
+  pred("occurrenceStatus", "PRESENT"), 
+  pred("hasCoordinate", TRUE), pred("hasGeospatialIssue", FALSE),
+  pred_not(pred_in("basisOfRecord",
+                   c("FOSSIL_SPECIMEN","LIVING_SPECIMEN"))),
+  format = "SIMPLE_CSV")
+
+# Save out the name catalog using the GBIF query unique ID in name to pair.
+write.csv(gbif_names, 
+          file.path(occ_dir, sprintf("gbif_names_%s.csv", occ_meta)),
+          row.names = FALSE)
+
+# Download the occurrences
+status <- occ_download_wait(occ_meta)
+if (status$status == "SUCCEEDED"){
+  d <- occ_download_get(occ_meta, path = occ_dir, overwrite = TRUE)
+} else {
+  warning(sprintf("The request %s.", status$status))
+  d <- NULL
+}
+```
