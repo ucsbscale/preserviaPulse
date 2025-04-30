@@ -1,7 +1,7 @@
 ## Purpose of script: grab GBIF data
 ## Authors: GEOG 274
 ## Date: Spring, 2025
-## Credits to: Dr. Lei Song (lsong@ucsb.edu)
+## Credits to: Wenxin Yang, Jacqueline Vogel, Yanni Zhan, Xue Yan, Dr. Lei Song (lsong@ucsb.edu)
 
 # Materials:
 #   https://docs.ropensci.org/rgbif/index.html
@@ -9,7 +9,6 @@
 #   https://docs.gbif.org/course-data-use/en/data-processing-pipeline.html
 #  https://data-blog.gbif.org/post/gbif-filtering-guide/
 #. https://data-blog.gbif.org/post/downloading-long-species-lists-on-gbif/
-
 
 # ------------- Setting up --------------
 # Install and load packages
@@ -30,7 +29,7 @@ library(ggplot2)
 
 
 # Set name
-myname = 'Xue'
+myname <- 'Wenxin'
 
 # Set a directory for data
 here() # first check path
@@ -72,14 +71,12 @@ scientific_names_df <- dat[, c("Name (common)", "Name (Latin)")]
 # Use Latin name for searching
 scientific_names <- scientific_names_df$`Name (Latin)`
 
-
 ## ------------ 2. Get information from gbif ------------
 # Confirm names used in GBIF database for your species list
 gbif_names <- name_backbone_checklist(scientific_names)
 
 # Only keep valid records
 gbif_names <- gbif_names[!is.na(gbif_names$usageKey), ]
-
 
 # ------------- Query and save data --------------
 ## Add a few internal filters for something that we definitely not want.
@@ -147,7 +144,6 @@ if(file.exists(file.path(occ_dir, paste0(download_id, '.zip')))){
   # unzip
   unzip(file.path(occ_dir, paste0(download_id, '.zip')), exdir = occ_dir)
 }
-
 
 # ------------- Post-processing --------------
 # read in the google spreadsheet to record each step
