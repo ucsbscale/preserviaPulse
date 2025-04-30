@@ -22,9 +22,15 @@ library(rgbif)
 library(googledrive)
 library(googlesheets4)
 library(tigris) # to download county boundary
+library(stringr)
+library(purrr)
+library(tidyr)
+library(ggplot2)
+
+
 
 # Set name
-myname = 'Wenxin'
+myname = 'Xue'
 
 # Set a directory for data
 here() # first check path
@@ -53,7 +59,7 @@ ss <- drive_get("Special Status Species")
 ss_meta <- gs4_get(ss) 
 sheet_names <- ss_meta$sheets$name
 
-dat <- read_sheet(ss, sheet = sheet_names[2]) # Select the taxa you're working on
+dat <- read_sheet(ss, sheet = sheet_names[1]) # Select the taxa you're working on
 head(dat)
 
 # for birds, we assigned individuals to different species so we subset the data frame
@@ -113,7 +119,7 @@ occ_meta <- occ_download(
   pred_not(pred_in("basisOfRecord",
                    c("FOSSIL_SPECIMEN","LIVING_SPECIMEN"))),
   pred("geometry", bbox_wkt),
-  format = "SIMPLE_CSV"
+  format = "SIMPLE_CSV",
   # if you've already put info in .Renviron, no need to use these arguments
   #user = "user",      # Replace with your actual username
   #pwd = "pwd",       # Replace with your actual password
@@ -207,7 +213,102 @@ if(nrow(speciesObs_folder) > 0) {
   warning("Could not find 'specieObs' folder in Google Drive. File saved locally only.")
 }
 
-## ----------- 3. Record numbers of records after each step -----------
+# There is a misalignment of column names in the downloaded file
+# Remember to manually change the name for the last two columns 
+# (decimalLongitude	& decimalLatitude)
+
+## ----------- 3. Data clean -----------
+# We need to exclude records from iNaturalist due to geoprivacy 
+# reference: https://help.inaturalist.org/en/support/solutions/articles/151000169938-what-is-geoprivacy-what-does-it-mean-for-an-observation-to-be-obscured-
+
+# Summarize geoprivacy information
+## Create bins (cut into intervals of 1000 meters)
+occ_gbif_uncertainty_bin <- occ_in_target_df %>%
+  filter(!is.na(coordinateUncertaintyInMeters)) %>%
+  mutate(uncertainty_bin = cut(
+    coordinateUncertaintyInMeters,
+    breaks = seq(0, max(coordinateUncertaintyInMeters, na.rm = TRUE) + 1000, by = 1000),
+    include.lowest = TRUE,
+    right = FALSE
+  )) %>%
+  group_by(uncertainty_bin) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  arrange(uncertainty_bin)
+
+print(occ_gbif_uncertainty_bin)
+
+## Remove records with uncertainty >1000 meters
+occ_in_target_df <- occ_in_target_df %>%
+  filter(coordinateUncertaintyInMeters <=1000)
+
+# Summarize "issue" column (remove any if necessary)
+# https://techdocs.gbif.org/en/data-use/occurrence-issues-and-flags
+
+## Separate issues into lists
+occ_in_target_df <- occ_in_target_df %>%
+  mutate(issue_list = stringr::str_split(issue, ";"))
+
+## Replace any NA in issue_list with an empty character vector
+occ_in_target_df$issue_list <- purrr::map(occ_in_target_df$issue_list, 
+                                          ~ if (is.null(.x) || anyNA(.x)) character(0) else .x)
+
+## Find all unique issues
+all_issues <- occ_in_target_df %>%
+  pull(issue_list) %>%
+  unlist() %>%
+  unique()
+
+all_issues <- all_issues[all_issues != ""] # remove "" (empty character)
+
+## Create a TRUE/FALSE column for each issue
+for (iss in all_issues) {
+  occ_in_target_df[[iss]] <- purrr::map_lgl(occ_in_target_df$issue_list, ~ iss %in% .x)
+}
+
+## Summarize: count how many TRUEs for each issue
+issue_counts <- occ_in_target_df %>%
+  dplyr::select(all_of(all_issues)) %>%
+  summarise(across(everything(), ~sum(.))) %>%
+  tidyr::pivot_longer(cols = everything(), names_to = "issue", values_to = "count")
+
+## Plot
+ggplot(issue_counts, aes(x = reorder(issue, -count), y = count)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +  # Flip for easier reading
+  labs(
+    title = "Count of Issues in GBIF Dataset",
+    x = "Issue",
+    y = "Number of Records"
+  ) +
+  theme_minimal(base_size = 14)
+
+## Remove "CONTINENT_COORDINATE_MISMATCH"
+occ_in_target_df <- occ_in_target_df %>%
+  filter(
+    !GEODETIC_DATUM_INVALID
+  )
+
+## Convert list columns to character type 
+## (for example, by concatenating the elements into a string)
+occ_in_target_df$issue_list <- sapply(occ_in_target_df$issue_list, function(x) paste(x, collapse = ","))
+
+write.csv(occ_in_target_df,"../Gbif-plant-clean.csv", row.names=F)
+
+# Upload to google drive
+# Get the target folder first to ensure it exists
+speciesObs_folder <- drive_find(pattern = "speciesObs", type = "folder")
+if(nrow(speciesObs_folder) > 0) {
+  # Upload to Google Drive if folder found
+  drive_upload(
+    file.path(occ_dir, "Gbif-plant-clean.csv"),
+    path = as_id(speciesObs_folder$id[1]),
+    name = "Gbif-plant-clean.csv"
+  )
+} else {
+  warning("Could not find 'specieObs' folder in Google Drive. File saved locally only.")
+}
+
+## ----------- 4. Record numbers of records after each step -----------
 # remember to also update numbers in the Google spreadsheet
 num_downloaded <- as.data.frame(table(download_gbif$species))
 num_3counties <- as.data.frame(table(occ_in_target_df$species))
