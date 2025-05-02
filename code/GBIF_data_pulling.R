@@ -381,7 +381,7 @@ colnames(num_suscount) <- c("Species name", "Occ number (susp count)")
 
 # save the cleaned dataframe
 write.table(occ_in_target_df,
-            file.path(paste0('GBIF', download_id, '-cleaned.csv')), row.names=FALSE,
+            file.path(occ_dir, paste0('GBIF', download_id, '-cleaned.csv')), row.names=FALSE,
             sep=';', quote=TRUE)
 
 
@@ -391,7 +391,7 @@ speciesObs_folder <- drive_find(pattern = "speciesObs", type = "folder")
 if(nrow(speciesObs_folder) > 0) {
   # Upload to Google Drive if folder found
   drive_upload(
-    file.path(paste0('GBIF', download_id, '-cleaned.csv')),
+    file.path(occ_dir, paste0('GBIF', download_id, '-cleaned.csv')),
     path = as_id(speciesObs_folder$id[1]),
     name = paste0('GBIF', download_id, '-cleaned.csv')
   )
