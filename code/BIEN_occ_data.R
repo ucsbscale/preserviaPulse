@@ -93,6 +93,11 @@ BIEN_occ <- filtered_occ
 # Or read the saved BIEN data directly
 # BIEN_occ<-read.csv("replace to your path/BIEN_3counties_occurrences.csv")
 
+# Delete records before 1980
+BIEN_occ <- BIEN_occ %>%
+  mutate(date_collected = as.Date(date_collected)) %>%           
+  filter(date_collected >= as.Date("1980-01-01")) 
+
 # Get datasource and summarize the information
 unique(BIEN_occ$datasource)
 
@@ -103,8 +108,11 @@ BIEN_occ %>% group_by(datasource) %>%
 BIEN_occ_subset<-BIEN_occ %>% filter(datasource!="GBIF")
 
 #-------------4. Merge records from GBIF and BIEN -------------
-# Read the saved GBIF data 
-GBIF_occ_clean<-read.csv("replace to your path/Gbif-plant-clean.csv")
+# Read the saved GBIF data
+GBIF_occ_clean <- read.csv("Replace to your path/GBIF-Plant0017179-250426092105405-cleaned.csv",
+                           quote = "\"",
+                           stringsAsFactors = FALSE,
+                           fileEncoding = "UTF-8")
 
 # Check column names from the two datasets 
 # and rename them so that they match each other
@@ -113,7 +121,8 @@ colnames(BIEN_occ_subset)
 colnames(BIEN_occ_subset)[1:4]=c("species","decimalLatitude","decimalLongitude","eventDate")
 
 # Merge the two datasets
-df<-bind_rows(BIEN_occ_subset,GBIF_occ_clean)
+BIEN_occ_subset$eventDate <- as.character(BIEN_occ_subset$eventDate) #Make sure data types in eventDate are consistent
+df <- bind_rows(BIEN_occ_subset, GBIF_occ_clean)
 
 # View duplicates
 df %>%
@@ -186,6 +195,14 @@ write.csv(df_unique_stat,
           file.path(occ_dir, "Plant_occurrences_stat.csv"),
           row.names = FALSE)
 
+# Check final records number for the first 20 species (Preserve most care)
+top20_names <- scientific_names[1:20]
+df_top20 <- df_unique_stat %>%
+  filter(species %in% top20_names)
+## Missing species
+not_found <- setdiff(top20_names, df_unique_stat$species)
+
+
 # Upload data to google drive
 # Get the target folder first to ensure it exists
 speciesObs_folder <- drive_find(pattern = "speciesObs", type = "folder")
@@ -199,3 +216,5 @@ if(nrow(speciesObs_folder) > 0) {
 } else {
   warning("Could not find 'specieObs' folder in Google Drive. File saved locally only.")
 }
+
+
