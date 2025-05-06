@@ -199,6 +199,12 @@ write.table(occ_in_target_df,
           sep = ";",
           quote = TRUE) # changed how we save file to properly handle the geometry column
 
+# Xue's comment: In case write.table also doesn't work,
+# Try the below code to write the table—it should write the correct file out
+# It's weird when I used write.table, the whole table was messed up
+write_csv(occ_in_target_df,
+          file.path(occ_dir, paste0(download_id, "_3counties_pts.csv")))
+
 # get # of records after this step
 num_3counties <- as.data.frame(table(occ_in_target_df$species))
 colnames(num_3counties) <- c("Species name", "Occ number (3 counties)")
@@ -384,6 +390,9 @@ write.table(occ_in_target_df,
             file.path(occ_dir, paste0('GBIF', download_id, '-cleaned.csv')), row.names=FALSE,
             sep=';', quote=TRUE)
 
+# Run the below code in case write.table doesn't work
+write_csv(occ_in_target_df,
+          file.path(occ_dir, paste0(download_id, "-cleaned.csv")))
 
 # Upload to google drive
 # Get the target folder first to ensure it exists
