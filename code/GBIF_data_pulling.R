@@ -28,7 +28,7 @@ library(purrr)
 library(tidyr)
 library(ggplot2)
 library(CoordinateCleaner) # add spatial filters
-
+library(readr) # for using write_csv
 
 
 # Set name
