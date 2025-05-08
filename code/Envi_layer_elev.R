@@ -94,6 +94,7 @@ writeRaster(srtm_clipped,
 # Plot check
 plot(srtm_clipped, main = "Clipped & Projected DEM (Tri-County)")
 
+# ------------- 3.	Terrain Derivative Calculation --------------
 # -------- 3a. Compute Slope --------
 
 # Compute slope in degrees
@@ -134,3 +135,23 @@ plot(tri, main = "Terrain Ruggedness Index (TRI)", col = rgb.palette(100))
 writeRaster(tri,
             filename = file.path(layer_dir, "TRI_three_county_deg.tif"),
             overwrite = TRUE)
+
+# ------------- 4. Hydrological Analysis -----------------------------
+# Compute Flow Direction
+flow_dir <- terrain(srtm_clipped, v = "flowdir", unit='degrees')
+
+# Plot check
+plot(flow_dir, main = "Flow Direction", col = hcl.colors(100, "YlGnBu"))
+
+# Compute Flow Accumulation
+flow_accum <- flowAccumulation(flow_dir)
+
+# Visualize with log transformation for better contrast
+log_accum <- log1p(flow_accum)  # log(1 + x) to avoid log(0)
+plot(log_accum, main = "Flow Accumulation (log scale)", col = hcl.colors(100, "YlGnBu"))
+
+# Save output
+writeRaster(flow_accum,
+            filename = file.path(layer_dir, "flow_accum_three_county.tif"),
+            overwrite = TRUE)
+
