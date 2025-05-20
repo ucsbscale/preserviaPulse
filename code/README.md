@@ -6,12 +6,12 @@ Study area: the Dangermond Preserve in Santa Barbara county located within the t
 
 ![test](../visualization/data_pulling_workflow.png "Flowchart")
 
-Input data: 
+#### Input data: 
 * Integrated Resources Management Plan (IRMP): get special status species
 * IUCN red list range maps: get specieal status species
 * CalFlora: get specieal status species
 
-R codes:
+#### R codes:
 * [01_GBIF_data_pulling.R](../code/01_GBIF_data_pulling.R)
     * Purpose: step 1 -2 grab GBIF data for target species, and step 3 - 4 clean species data.
     * Birds data accessed on 05/18/2025.
@@ -29,8 +29,10 @@ R codes:
 * [06_postProccOcc.R](../code/06_postProccOcc.R)
     * Purpose: final clean up step to get a single model-ready occurrence data file for all species.
 
-Output data:
+#### Output data:
 * Final cleaned data for all species, projected to NAD California Zone 5
+
+Example:
 
 | species | x | y |
 | -------| --- | --- |
