@@ -15,9 +15,9 @@ library(stringr)
 
 # Set a directory for data
 here() # first check path
-occ_dir <- here("visualization") # create a data folder with relative path
-file.path(occ_dir) # double check its absolute path
-if (!dir.exists(occ_dir)) dir.create(occ_dir) # if it's not there already, create it
+a_dir <- here("visualization/private") # create a data folder with relative path
+file.path(a_dir) # double check its absolute path
+if (!dir.exists(a_dir)) dir.create(a_dir) # if it's not there already, create it
 
 
 # Get boundaries for areas of interest
@@ -80,7 +80,7 @@ p <- ggplot() +
   theme(legend.position = "none")
 
 # save the static plot
-ggsave(filename = "visualization/static_map.png", plot = p, width = 10, height = 10)
+ggsave(filename = "visualization/private/static_map.png", plot = p, width = 10, height = 10)
 
 # ------------- Create interactive leaflet map --------------
 # create color palette (1 color for each specie)
@@ -130,4 +130,4 @@ m <- m %>%
   )
 
 # save the interactive map
-saveWidget(m, file = "visualization/interactive_species_map.html")
+saveWidget(m, file = "visualization/private/interactive_species_map.html")

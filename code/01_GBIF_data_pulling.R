@@ -65,8 +65,8 @@ all_names <- all_names %>% mutate(
   `Name (Latin)` = ifelse(`Name (Latin)`=='Vulpes vulpes ssp.', 'Vulpes vulpes', `Name (Latin)`)
 ) %>% unique()
 
-# ------------- Get occurrence info for a species list --------------
-## ------------ 1. Get species list ------------
+# ------------- 1. Get occurrence info for a species list --------------
+## ------------ 1.1 Get species list ------------
 
 # Get data from the spreadsheet
 ss <- drive_get("Special Status Species")
@@ -88,14 +88,14 @@ scientific_names_df <- dat[, c("Name (common)", "Name (Latin)")]
 # Use Latin name for searching
 scientific_names <- scientific_names_df$`Name (Latin)`
 
-## ------------ 2. Get information from gbif ------------
+## ------------ 1.2 Get information from gbif ------------
 # Confirm names used in GBIF database for your species list
 gbif_names <- name_backbone_checklist(scientific_names)
 
 # Only keep valid records
 gbif_names <- gbif_names[!is.na(gbif_names$usageKey), ]
 
-# ------------- Query and save data --------------
+# ------------- 2. Query and save data --------------
 ## Add a few internal filters for something that we definitely not want.
 ## we can do other filters afterwards.
 ## 1. Zero coordinate : Coordinates are exactly (0,0). null island
@@ -157,13 +157,13 @@ if(file.exists(file.path(occ_dir, paste0(download_id, '.zip')))){
   unzip(file.path(occ_dir, paste0(download_id, '.zip')), exdir = occ_dir)
 }
 
-# ------------- Post-processing --------------
+# ------------- 3. Post-processing --------------
 # read in the google spreadsheet to record each step
 pt_info <- drive_get("GBIF Occurrence Removal")
 missing_species <- read_sheet(pt_info, sheet = "GBIF missing species")
 occ_num_info <- read_sheet(pt_info, sheet = "Occurrence number changes")
 
-## ----------- 1. Get species with no records -----------
+## ----------- 3.1 Get species with no records -----------
 # read in downloaded data
 # note: if you don't have the download id, just copy paste the file name and run the following line
 # download_id = '' # your copy pasted file name without the .csv extension
@@ -188,7 +188,7 @@ missing_species <- rbind(missing_species, this_info) %>% unique()
 # Update the Google spreadsheet
 write_sheet(missing_species, pt_info, sheet = "GBIF missing species")
 
-## ----------- 2. Clip data to target counties -----------
+## ----------- 3.2 Clip data to target counties -----------
 # Convert .csv occurrence data to sf object (spatial data)
 occ_sf <- st_as_sf(download_gbif, coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
 
@@ -237,7 +237,7 @@ if(nrow(speciesObs_folder) > 0) {
   warning("Could not find 'specieObs' folder in Google Drive. File saved locally only.")
 }
 
-## ----------- 3. Data cleaning steps -----------
+## ----------- 3.3 Data cleaning steps -----------
 # if need to re-read the csv file
 # occ_in_target_df <- read.csv(file.path(occ_dir, paste0(download_id, "_3counties_pts.csv")), sep=";")
 
@@ -504,7 +504,7 @@ final_clean_sort_of_thinning <- function(occ_clean, taxon, thisdir){
   return(occ_unique)
 }
 
-## ----------- 4. Record numbers of records after each step -----------
+## ----------- 3.4 Record numbers of records after each step -----------
 # remember to also update numbers in the Google spreadsheet
 this_num_info <- Reduce(function(x, y) merge(x, y, all = TRUE),
                      list(num_downloaded, num_3counties, num_coordUnc, 
@@ -536,7 +536,7 @@ occ_num_info <- occ_num_info %>%
 write_sheet(occ_num_info, pt_info, sheet = "Occurrence number changes")
 
 
-# --------------------- 5. Merge animal species -----------------
+# --------------------- 4. Merge animal species -----------------
 # Note: before step 5, first go to Integrated_occ_dangermond_Portal.R to get dp data for animals
 # And then go to mergeAnimalOcc.R to create merge files (all projected in 4326)
 # Then come back to this
