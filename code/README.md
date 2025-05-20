@@ -1,8 +1,33 @@
-## GBIF_data_pulling.R
+## Codes
 
-The script to query occurrence data from GBIF database.
+Study area: the Dangermond Preserve in Santa Barbara county located within the tri-county region in southern California (Santa Barbara, Ventura, San Louis Obispo)
 
-## Envi_layer_elev.R
+### Species occurrence data pulling and cleaning
+
+![test](../visualization/data_pulling_workflow.png "Flowchart")
+
+Input data: 
+* Integrated Resources Management Plan (IRMP): get special status species
+* IUCN red list range maps: get specieal status species
+* CalFlora: get specieal status species
+
+R codes:
+* [01_GBIF_data_pulling.R](../code/01_GBIF_data_pulling.R)
+    * Birds data accessed on 05/18/2025
+    * Mammals data accessed on 05/07/2025
+    * Herps and invertebrates data accessed on 04/30/2025
+    * Plants data accessed on 05/15/2025
+* [02_BIEN_occ_data.R](../code/02_BIEN_occ_data.R)
+* [03_Integrated_occ_dangermond_Portal.R](../code/03_Integrated_occ_dangermond_Portal.R)
+* [04_GBIF_BIEN_DP_merge.R](../code/04_GBIF_BIEN_DP_merge.R)
+* [05_mergeAnimalOcc.R](../code/05_mergeAnimalOcc.R)
+* [06_postProccOcc.R](../code/06_postProccOcc.R)
+
+Output data:
+* Final cleaned data for all species, projected to NAD California Zone 5
+| species | x | y |
+
+### Envi_layer_elev.R
 
 The script to generate slope, aspect, TRI, and flow accumulation layers from elevation (SRTM 30m) layer
 * Load and filter county boundaries
