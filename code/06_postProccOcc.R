@@ -63,6 +63,7 @@ write.table(plants_df, file.path('data/occurrences/plants', name_plants_df), sep
 ## -------------------- 1.3 merge animal and plant data ------------------
 
 Anim_Plant_merge <- bind_rows(anim_df, plants_df)
+write.table(Anim_Plant_merge, file.path('data/occurrences/Anim_Plant_merge.csv'), sep=',', row.names = FALSE)
 
 ## -------------------- 1.4 upload to gdrive -----------------------
 drive_auth()
