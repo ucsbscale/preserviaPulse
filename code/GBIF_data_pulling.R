@@ -160,7 +160,7 @@ if(file.exists(file.path(occ_dir, paste0(download_id, '.zip')))){
 # ------------- Post-processing --------------
 # read in the google spreadsheet to record each step
 pt_info <- drive_get("GBIF Occurrence Removal")
-missing_species <- read_sheet(pt_info, sheet = "Missing species")
+missing_species <- read_sheet(pt_info, sheet = "GBIF missing species")
 occ_num_info <- read_sheet(pt_info, sheet = "Occurrence number changes")
 
 ## ----------- 1. Get species with no records -----------
@@ -480,11 +480,14 @@ final_clean_sort_of_thinning <- function(occ_clean, taxon, thisdir){
   
   
   # save the cleaned dataframe
-  write.table(occ_unique,
-              file.path(thisdir, paste0(taxon, '-cleaned-0515.csv')), row.names=FALSE,
-              sep=';', quote=TRUE)
-  print('saved to local')
+  #write.table(occ_unique,
+  #            file.path(thisdir, paste0(taxon, '-cleaned-0515.csv')), row.names=FALSE,
+  #            sep=';', quote=TRUE)
+  
   # use write_csv in case it does not work
+  readr::write_csv(occ_unique,
+                   file.path(thisdir, paste0(taxon, '-cleaned-0515.csv')))
+  print('saved to local')
   
   # Upload to google drive
   speciesObs_folder <- drive_find(pattern = "speciesObs", type = "folder")
@@ -534,6 +537,11 @@ herps_invs_final_info <- merge(herps_invs_final_info, all_names, by.x='Var1', by
 colnames(herps_invs_final_info) <- c('Name (Latin)', 'Name (common)', 'Number')
 write_csv(herps_invs_final_info, file.path(anim_dir, 'herps_invs_final_num.csv'))
 
+# for plants
+plant_dir <- here('data/occurrences/plants/')
+this_df <- read.csv(file.path(plant_dir, 'GBIF0009121-250515123054153-cleaned.csv'))
+taxon <- "plants"
+plant_GBIF_final <- final_clean_sort_of_thinning(this_df, taxon, plant_dir)
 
 ## ----------- 4. Record numbers of records after each step -----------
 # remember to also update numbers in the Google spreadsheet
