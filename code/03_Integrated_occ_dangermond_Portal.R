@@ -53,23 +53,23 @@ scientific_names <- unique(all_names$`Name (Latin)`)
 
 # ------------ 2. Get data ------------
 ## ------------ (1) Read data ------------
-DP_portal_occ <- read.csv("E:/OneDrive/UCSB/Class/GEOG274/preserviaPulse/data/occurrences/integrated_occurrences_dangermond_Portal.csv",
+DP_portal_occ <- read.csv(here::here("data", "occurrences", "integrated_occurrences_dangermond_Portal.csv"),
                            quote = "\"",
                            stringsAsFactors = FALSE,
                            fileEncoding = "UTF-8")
 
-cal_Surf_Thistle <- read.csv("E:/OneDrive/UCSB/Class/GEOG274/preserviaPulse/data/occurrences/calflora-Surf Thistle.csv",
+cal_Surf_Thistle <- read.csv(here::here("data", "occurrences", "calflora-Surf Thistle.csv"),
                              quote = "\"",
                              stringsAsFactors = FALSE,
                              fileEncoding = "UTF-8")
 
-cal_Ribes <- read.csv("E:/OneDrive/UCSB/Class/GEOG274/preserviaPulse/data/occurrences/calflora-out-bitter-gooseberry.csv",
+cal_Ribes <- read.csv(here::here("data", "occurrences","calflora-out-bitter-gooseberry.csv"),
                              quote = "\"",
                              stringsAsFactors = FALSE,
                              fileEncoding = "UTF-8")
 
 
-cal_horkelia <- read.csv("E:/OneDrive/UCSB/Class/GEOG274/preserviaPulse/data/occurrences/calflora-out-horkelia.csv",
+cal_horkelia <- read.csv(here::here("data", "occurrences","calflora-out-horkelia.csv"),
                              quote = "\"",
                              stringsAsFactors = FALSE,
                              fileEncoding = "UTF-8")
