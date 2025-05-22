@@ -11,11 +11,11 @@ library(dplyr)
 library(sf)
 
 # Define path, extent, and environmental variable names
-data_dir <- "C:/Users/zijun_li/Documents/ConservationGIS2025/ClimateVariable/Chelsa_Hist1981_2010/Chelsa_Hist19variables"
-env_names <- c(paste0("bio",1:19))
+data_dir <- "/LOCAL_PATH"
+env_names <- c(paste0("bio", 1:19))
 
 # Load shapefile (adjust path to your file)
-counties_sf <- st_read("C:/Users/zijun_li/Documents/ConservationGIS2025/ClimateVariable/tl_2024_us_county/tl_2024_us_county.shp")
+counties_sf <- st_read("/PATH_TO_BOUNDARY")
 
 # Get California counties
 ca_counties <- counties_sf %>% 
@@ -23,13 +23,14 @@ ca_counties <- counties_sf %>%
 
 threecounty_buffer <- ca_counties %>%
   filter(NAME %in% c("Santa Barbara", "Ventura", "San Luis Obispo")) %>%
-  st_transform(3310) %>%                      # California Albers (units: meters)
+  st_transform(3310) %>% # California Albers (units: meters)
   st_union() %>%
-  st_buffer(dist = 5000) %>%                  # buffer 5 km
-  st_transform(4329)
+  st_buffer(dist = 5000) %>% # buffer 5 km
+  st_transform(4326)
 
 # Load and stack raster files
-env_files <- list.files(path = data_dir, pattern = "^CHELSA_.*\\.tif$", full.names = TRUE)
+env_files <- list.files(
+  path = data_dir, pattern = "^CHELSA_.*\\.tif$", full.names = TRUE)
 env_stack <- rast(env_files)
 env_stack_cropped <- crop(env_stack, threecounty_buffer)
 
@@ -41,14 +42,15 @@ env_stack_projected <- project(env_stack_cropped, target_crs, method = "bilinear
 
 # Option 1: Export as a Single Multi-Layer Raster (stacked GeoTIFF)
 # Define output path and filename
-output_dir <-"C:/Users/zijun_li/Documents/ConservationGIS2025/ClimateVariable/Export_RaterStack/hist_bio19"
+output_dir <-"/LOCAL_PATH_STORE"
 output_file <- file.path(output_dir,"projected_env_stack.tif")
 
 # Write the stack to a single multi-layer GeoTIFF
 writeRaster(env_stack_projected, filename = output_file, overwrite = TRUE)
 
 plot(env_stack_projected[[1:16]]) 
-#Base R plotting windows (especially on Windows or macOS) sometimes default to showing only 16 layers per multi-panel plot.
+# Base R plotting windows (especially on Windows or macOS) sometimes default to 
+# showing only 16 layers per multi-panel plot.
 
 #plot individually in a loop
 # plot(env_stack_projected[[1:19]])
@@ -115,7 +117,3 @@ pdf(file.path(data_dir, "chelsa_hist_selected_clim_corrplot.pdf"), width = 6, he
 corrplot(cor_matrix, method = "color", type = "upper", tl.cex = 0.8,
          addCoef.col = "black", number.cex = 0.5, diag = FALSE)
 dev.off()
-
-
-
-
