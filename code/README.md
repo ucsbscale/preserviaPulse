@@ -4,7 +4,7 @@ Study area: the Dangermond Preserve in Santa Barbara county located within the t
 
 ### Species occurrence data pulling and cleaning
 
-![test](../visualization/data_pulling_workflow.png "Flowchart")
+![test](../doc/figures/data_pulling_workflow.png "Flowchart")
 
 #### Input data: 
 * Integrated Resources Management Plan (IRMP): get special status species
