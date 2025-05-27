@@ -11,13 +11,8 @@ library(here)
 library(spatialEco)
 select <- dplyr::select
 
-# ------------ Output setting ------------
-# Output folder
-#dir.create("results/projections", recursive = TRUE, showWarnings = FALSE)
-#dir.create("results/evaluations", recursive = TRUE, showWarnings = FALSE)
 
-
-# ------------ 1. Get environmental and occurrence data ------------
+# ------------ 1. Get environmental and species list ------------
 # Environmental data
 ## Reference data
 ref_Env <- raster::stack(here("data", "Stack_Env", "final_env_1980_2010_stack.tif"))
@@ -31,9 +26,11 @@ Env_normalized_list <- lapply(Env_files, function(f) {
   s <- raster::stack(f)
   
   s_std <- raster::stack(lapply(1:nlayers(s), function(i) {
-    r <- ref_Env
-    mu <- cellStats(r, stat = 'mean', na.rm = TRUE)
-    sigma <- cellStats(r, stat = 'sd', na.rm = TRUE)
+    r <- s[[i]]  
+    ref <- ref_Env[[i]] 
+    
+    mu <- cellStats(ref, stat = 'mean', na.rm = TRUE)
+    sigma <- cellStats(ref, stat = 'sd', na.rm = TRUE)
     (r - mu) / sigma
   }))
   
@@ -51,45 +48,14 @@ Env_normalized_list <- lapply(Env_files, function(f) {
   return(s_std)
 })
 
-# Occurrence data
-## Read data
-occ <- read.csv(here("data", "occurrences", "Anim_Plant_merge.csv")) 
-occ_plant <- read.csv(here("data", "occurrences", "Plant_occurrences_Top19.csv")) # Only model the most important 19 species with more than 10 records
-
-## Filter to target species
-occ_filtered <- occ %>%
-  filter(
-    taxon == "birds" |
-    taxon == "herps" |
-    taxon == "mammals" |
-      (taxon == "plant" & species %in% occ_plant$species)
-  )
-
-## Check if plant filter is correct
-occ_filtered %>%
-  filter(taxon == "plant") %>%
-  summarise(n_species = n_distinct(species))
-
-## Organize data to fit function ensemble_modelling
-occ_organized <- occ_filtered %>%
-  dplyr::rename("SPECIES" = species, 
-                "LONGITUDE" = x, "LATITUDE" = y) %>% 
-  select(-taxon)
-
-## Get species list
-species_list <- unique(occ_organized$SPECIES)
-
+# Get species list
 species_list <- list("Agelaius tricolor")
 
-  
 # ------------ 2. Model setting ------------
-#ESDM <- ensemble_modelling(c('RF', "GAM", "MAXENT"), occ, Env, 
-#  Xcol = 'LONGITUDE', Ycol = 'LATITUDE', verbose = TRUE,
-#  cv = "LOO")
-SDM_ens <- readRDS(here("data", "Agelaiustricolor_test_ntree2.rds"))
+SDM_ens <- readRDS(here("data", "Agelaiustricolor_ntree500.rds"))
 
 # ------------ 3. Function for model loop ------------
-model_species_by_env_list <- function(ESDM, species_list, occ_organized, Env_normalized_list,
+model_species_by_env_list <- function(ESDM, species_list, Env_normalized_list,
                                       projection_dir = here("results", "projections"),
                                       evaluation_dir = here("results", "evaluations"),
                                       submodel_dir = here("results", "submodelsEva")) {
@@ -101,16 +67,20 @@ model_species_by_env_list <- function(ESDM, species_list, occ_organized, Env_nor
   # Output variables
   all_algorithm_evaluation <- list()
   all_variable_importance <- list()
+  all_submodel_evaluation <- list()            
+  all_submodel_variable_importance <- list()
   
   for (sp in species_list) {
     cat("=== Modeling species:", sp, "===\n")
-    occ_sp <- occ_organized %>% filter(SPECIES == sp) # Occurrence for each species
     
     for (Env in Env_normalized_list) {
       
       # -----Get scenario name-----
       scenario_name <- attr(Env, "scenario_name")
       base_name <- paste0(sp, "_", scenario_name)
+      
+      # -----Get model for each species----
+      #sp_model <- ESDM@models[[sp]]
       
       # ---- projection----
       proj <- project(ESDM, Env, update.projections = FALSE, SDM.projections = TRUE)
@@ -149,15 +119,17 @@ model_species_by_env_list <- function(ESDM, species_list, occ_organized, Env_nor
         sub_eval <- as.data.frame(submodel@evaluation)
         sub_eval$Species <- sp
         sub_eval$Scenario <- scenario_name
+        sub_eval$Submodel <- sub_name 
         sub_eval_path <- file.path(submodel_dir, paste0(sub_base, "_evaluation.csv"))
-        write.csv(sub_eval, sub_eval_path, row.names = FALSE)
+        all_submodel_evaluation[[length(all_submodel_evaluation) + 1]] <- sub_eval
         
         # Save variable importance (CSV)
         sub_var_imp <- as.data.frame(submodel@variable.importance)
         sub_var_imp$Species <- sp
         sub_var_imp$Scenario <- scenario_name
+        sub_var_imp$Submodel <- sub_name 
         sub_var_imp_path <- file.path(submodel_dir, paste0(sub_base, "_var_importance.csv"))
-        write.csv(sub_var_imp, sub_var_imp_path, row.names = FALSE)
+        all_submodel_variable_importance[[length(all_submodel_variable_importance) + 1]] <- sub_var_imp
       } 
     }    
   }      
@@ -169,10 +141,18 @@ model_species_by_env_list <- function(ESDM, species_list, occ_organized, Env_nor
   write.csv(do.call(rbind, all_variable_importance), 
             file = file.path(evaluation_dir, "all_variable_importance.csv"), row.names = FALSE)
   
+  write.csv(do.call(rbind, all_submodel_evaluation),             
+            file = file.path(evaluation_dir, "all_submodel_evaluation.csv"), row.names = FALSE)
+  
+  write.csv(do.call(rbind, all_submodel_variable_importance),   
+            file = file.path(evaluation_dir, "all_submodel_variable_importance.csv"), row.names = FALSE)
+  
   # ---- Return all forms as a list----
   return(list(
     algorithm_evaluation = all_algorithm_evaluation,
-    variable_importance = all_variable_importance
+    variable_importance = all_variable_importance,
+    submodel_evaluation = all_submodel_evaluation,                         
+    submodel_variable_importance = all_submodel_variable_importance 
   ))
 } 
 
@@ -180,10 +160,10 @@ model_species_by_env_list <- function(ESDM, species_list, occ_organized, Env_nor
 # ------------ 4. Run model for all target species ------------
 Projection_result <- model_species_by_env_list(SDM_ens, 
                                                species_list, 
-                                               occ_organized, 
                                                Env_normalized_list,
                                                projection_dir = here("results", "projections"),
-                                               evaluation_dir = here("results", "evaluations"))
+                                               evaluation_dir = here("results", "evaluations"),
+                                               submodel_dir = here("results", "submodelsEva"))
 
 
 
