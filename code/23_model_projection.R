@@ -48,11 +48,20 @@ Env_normalized_list <- lapply(Env_files, function(f) {
   return(s_std)
 })
 
-# Get species list
+# Get species list (need to change)
 species_list <- list("Agelaius tricolor")
 
 # ------------ 2. Model setting ------------
-SDM_ens <- readRDS(here("data", "Agelaiustricolor_ntree500.rds"))
+model_dir <- here("data", "models")
+model_files <- list.files(model_dir, pattern = "\\.rds$", full.names = TRUE)
+
+# read as list
+ESDM <- setNames(
+  lapply(model_files, readRDS),
+  tools::file_path_sans_ext(basename(model_files))
+)
+
+#SDM_ens <- readRDS(here("data", "Agelaiustricolor_ntree500.rds"))
 
 # ------------ 3. Function for model loop ------------
 model_species_by_env_list <- function(ESDM, species_list, Env_normalized_list,
@@ -80,7 +89,7 @@ model_species_by_env_list <- function(ESDM, species_list, Env_normalized_list,
       base_name <- paste0(sp, "_", scenario_name)
       
       # -----Get model for each species----
-      #sp_model <- ESDM@models[[sp]]
+      sp_model <- ESDM[[sp]]
       
       # ---- projection----
       proj <- project(ESDM, Env, update.projections = FALSE, SDM.projections = TRUE)
@@ -158,7 +167,7 @@ model_species_by_env_list <- function(ESDM, species_list, Env_normalized_list,
 
 
 # ------------ 4. Run model for all target species ------------
-Projection_result <- model_species_by_env_list(SDM_ens, 
+Projection_result <- model_species_by_env_list(ESDM, 
                                                species_list, 
                                                Env_normalized_list,
                                                projection_dir = here("results", "projections"),
