@@ -220,6 +220,11 @@ calculate_uncertainty <- function(species_name, projection_dir, output_dir) {
   r_sd <- calc(r_stack, sd, na.rm = TRUE)
   r_var <- r_sd^2
   
+  # Calculate range: max - min
+  r_max <- calc(r_stack, max, na.rm = TRUE)
+  r_min <- calc(r_stack, min, na.rm = TRUE)
+  r_range <- r_max - r_min
+  
   # Create output dir
   dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
   
@@ -230,7 +235,10 @@ calculate_uncertainty <- function(species_name, projection_dir, output_dir) {
   writeRaster(r_var, filename = file.path(output_dir, paste0(species_name, "_var_scenarios.tif")),
               format = "GTiff", overwrite = TRUE)
   
-  return(list(species = species_name, mean = r_mean, variance = r_var))
+  writeRaster(r_range, filename = file.path(output_dir, paste0(species_name, "_range_scenarios.tif")),
+              format = "GTiff", overwrite = TRUE)
+  
+  return(list(species = species_name, mean = r_mean, variance = r_var, Projrange = r_range))
 }
 
 # Apply function to all species
