@@ -33,7 +33,7 @@ refined_county_sf_proj <- st_as_sf(refined_county_vect_proj)
 
 #------------- 1. Load Current Species Obs Data  -------------
 # Load your combined plant/animal data
-anim_plant_df <- read.csv("data/Anim_Plant_merge.csv")
+anim_plant_df <- read.csv("data/Anim_Plant_merge_final0613.csv")
 
 # Convert to sf object (assuming x and y are in State Plane Zone 5, EPSG:2229)
 anim_plant_sf <- st_as_sf(anim_plant_df, coords = c("x", "y"), crs = 2229)
