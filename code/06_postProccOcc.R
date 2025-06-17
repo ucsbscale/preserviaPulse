@@ -82,9 +82,9 @@ CNDDB <- CNDDB %>%
 
 # Final merge
 merged_df <- bind_rows(CNDDB, Anim_Plant_merge) %>%
-  distinct(x, y, .keep_all = TRUE)
+  distinct(species, x, y, .keep_all = TRUE)
 
-write.table(merged_df, file.path('data/occurrences/Anim_Plant_merge_final0613.csv'), sep=',', row.names = FALSE)
+write.table(merged_df, file.path('data/occurrences/Anim_Plant_merge_final0616.csv'), sep=',', row.names = FALSE)
 
 ## -------------------- 1.5 upload to gdrive -----------------------
 drive_auth()
