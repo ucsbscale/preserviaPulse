@@ -1,4 +1,8 @@
-## Purpose of script: Species Distribution Projection 
+## Purpose of script: 
+## 1. Species Distribution Projection 
+## 2. Richness calculation for each species group
+## 3. Uncertainty between scenarios
+## 4. Write variable importance from the models
 ## Authors: GEOG 274
 ## Date: Spring, 2025
 ## Credits to: Wenxin Yang, Yanni Zhan, Xue Yan, Yifei Liu
@@ -15,6 +19,12 @@ library(dismo)
 library(randomForest)
 library(pROC)
 library(caret)
+library(readxl)
+library(ggplot2)
+library(tibble)
+library(stringr)
+library(writexl)
+library(tools)
 
 select <- dplyr::select
 
@@ -296,13 +306,8 @@ uncertainty_results <- lapply(species_list, function(sp) {
 r <- rast(here("results", "evaluations", "plant","Abronia maritima_mean_scenarios.tif"))
 plot(r)
 
-# -------------6. Write variable importance form the models-------
-library(dplyr)
-library(tibble)
-library(stringr)
-library(writexl)
-library(tools)
-
+# -------------6. Write variable importance from the models-------
+# Order variables
 var_order <- c("bio1", "bio3", "bio5", "bio6", "bio15", "bio17", "bio18", "bio19", 
                "slope", "aspect", "flow_acc", "solar")
 
@@ -315,7 +320,7 @@ clean_varname <- function(x) {
     str_trim()
 }
 
-# Process varimp tables
+# Function for processing varimp tables
 process_varimp_unified <- function(df) {
   df2 <- df %>%
     select(2) %>%                         # Extract Importance 
@@ -328,6 +333,7 @@ process_varimp_unified <- function(df) {
   return(df2)
 }
 
+# Read models
 rds_dir <- here("results", "models","bird")
 rds_files <- list.files(rds_dir, pattern = "\\.RDS$", ignore.case = TRUE, full.names = FALSE)
 
@@ -335,7 +341,7 @@ rds_files <- list.files(rds_dir, pattern = "\\.RDS$", ignore.case = TRUE, full.n
 all_data <- list()  
 
 for (rds_file in rds_files) {
-  rds_path <- file.path(rds_dir, rds_file)   # 关键：用完整路径读取
+  rds_path <- file.path(rds_dir, rds_file)   
   Targetmodel <- readRDS(rds_path)
   species <- file_path_sans_ext(basename(rds_file))
   
@@ -370,16 +376,62 @@ if (length(all_data) > 0) {
 }
 
 
-library(readxl)
-rds_dir <- here("results", "evaluations")
-file_path <- file.path(rds_dir, "variable_importance.xlsx")
+# Plot
+eval_dir <- here("results", "evaluations")
+file_path <- file.path(eval_dir, "variable_importance.xlsx")
 
-combined_df <- read_excel(file_path, sheet = "allSpecies")
+allSpecies_df <- read_excel(file_path, sheet = "allSpecies")
+bird_df <- read_excel(file_path, sheet = "Bird")
+plant_df <- read_excel(file_path, sheet = "plant")
+other_animal_df <- read_excel(file_path, sheet = "animal_on_the_ground")
 
-# Group by species
-per_species_mean <- combined_df %>%
-  group_by(species, Variable) %>%
-  summarise(mean_importance = mean(Importance, na.rm = TRUE), .groups = "drop")
+allSpecies_df$group <- "All species" 
+bird_df$group <- "Bird"
+plant_df$group <- "Plant"
+other_animal_df$group <- "Other animal"
+df_long <- bind_rows(allSpecies_df, bird_df, plant_df, other_animal_df)
+
+summary_df <- df_long %>%
+  group_by(group, Variable) %>%
+  summarise(
+    median = median(Importance, na.rm = TRUE),
+    q1 = quantile(Importance, 0.25, na.rm = TRUE),
+    q3 = quantile(Importance, 0.75, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+
+ggplot(summary_df, aes(x = Variable, y = median, color = group)) +
+  geom_errorbar(aes(ymin = q1, ymax = q3), 
+                position = position_dodge(width = 0.6),
+                width = 0.2, linewidth = 0.8)  +
+  
+  geom_point(position = position_dodge(width = 0.6),
+             size = 2.5)   +
+  labs(
+    title = "Model-averaged variable importance across species groups",
+    x = "Variable",
+    y = "Importance (median with IQR)"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_color_manual(
+    name = "Species Group",
+    values = c(
+    "All species" = "#4a4e69",
+    "Bird" = "#FFCA3A",
+    "Plant" = "#8AC926",
+    "Other animal" = "#1982C4"
+  ))  +
+  theme_minimal(base_size = 14) +
+  theme(
+    axis.line = element_line(color = "black", size = 0.6),
+    axis.ticks = element_line(color = "black", linewidth = 0.4),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
 
 across_species_summary <- per_species_mean %>%
   group_by(Variable) %>%
@@ -392,18 +444,4 @@ across_species_summary <- per_species_mean %>%
     .groups = "drop"
   ) %>%
   arrange(desc(mean_of_means))
-
-
-library(ggplot2)
-
-ggplot(per_species_mean, aes(x = reorder(Variable, -mean_importance, median), y = mean_importance)) +
-  geom_boxplot(fill = "skyblue", outlier.color = "red", width = 0.6) +
-  labs(
-    title = "Distribution of Mean Variable Importance Across All Species",
-    x = "Variable",
-    y = "Mean Importance per Species"
-  ) +
-  theme_minimal(base_size = 14) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
 
