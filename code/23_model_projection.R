@@ -29,7 +29,7 @@ library(tools)
 select <- dplyr::select
 
 
-# ------------ 1. Get environmental and species list ------------
+# ------------ 1. Get environmental data ------------
 # Environmental data
 ## Reference data
 ref_Env <- raster::stack(here("data", "Stack_Env", "combined_stack_hist.tif"))
@@ -68,8 +68,8 @@ Env_normalized_list <- lapply(Env_files, function(f) {
 
 # ------------ 2. Function for model loop ------------
 Predict_species <- function(Env_normalized_list,
-                            model_dir = here("results", "models","mammal"),
-                            projection_dir = here("results", "projections","mammal")) {
+                            model_dir = here("results", "models","Rerun"),
+                            projection_dir = here("results", "projections","Rerun")) {
   
   # Get species list
   rds_files <- list.files(model_dir, pattern = "\\.RDS$", ignore.case = TRUE, full.names = FALSE)
@@ -198,14 +198,15 @@ Predict_species <- function(Env_normalized_list,
 
 # ------------ 3. Run model for all target species ------------
 Projection_result <- Predict_species(Env_normalized_list,
-                                     model_dir = here("results", "models","mammal"),
-                                     projection_dir = here("results", "projections","mammal"))
+                                     model_dir = here("results", "models","Rerun"),
+                                     projection_dir = here("results", "projections","Rerun"))
 
 
 # -------------4. Richness calculation ------------------------
+## -------------(1) Richness calculation ------------------------
 calculate_species_richness <- function(projection_dir, 
                                        scenario = c("ssp126", "ssp370", "ssp585"), 
-                                       output_dir = here("results", "projections","mammal")) {
+                                       output_dir = here("results", "projections","Rerun")) {
   richness_list <- list()
   
   for (s in scenario){
@@ -242,10 +243,23 @@ calculate_species_richness <- function(projection_dir,
   return(richness_list)
 }
 
-calculate_species_richness(projection_dir = here("results", "projections","mammal"), 
+calculate_species_richness(projection_dir = here("results", "projections","Habitat","Herb","plant"), 
                            scenario = c("ssp126", "ssp370", "ssp585"), 
-                           output_dir = here("results", "projections","mammal"))
-  
+                           output_dir = here("results", "projections","Habitat","Herb","plant"))
+
+# r <- terra::rast(here("results", "projections","Habitat","Herb","plant", "Plant_species_richness_ssp126.tif"))
+# plot(r)  
+
+## -------------(2) Current-future difference ------------------------
+r1 <- rast("raster1.tif")
+r2 <- rast("raster2.tif")
+
+r_diff <- r1 - r2
+
+writeRaster(r_diff, here("output", "raster_diff.tif"), overwrite = TRUE)
+
+
+
 # -------------5. Uncertainty between different scenarios-------
 # Define function
 calculate_uncertainty <- function(species_name, projection_dir, output_dir) {
@@ -334,7 +348,7 @@ process_varimp_unified <- function(df) {
 }
 
 # Read models
-rds_dir <- here("results", "models","bird")
+rds_dir <- here("results", "models","Rerun")
 rds_files <- list.files(rds_dir, pattern = "\\.RDS$", ignore.case = TRUE, full.names = FALSE)
 
 
@@ -377,8 +391,8 @@ if (length(all_data) > 0) {
 
 
 # Plot
-eval_dir <- here("results", "evaluations")
-file_path <- file.path(eval_dir, "variable_importance.xlsx")
+eval_dir <- here("results", "evaluations", "KeyHabitat","Herb")
+file_path <- file.path(eval_dir, "Herb_variable_importance.xlsx")
 
 allSpecies_df <- read_excel(file_path, sheet = "allSpecies")
 bird_df <- read_excel(file_path, sheet = "Bird")
@@ -433,15 +447,15 @@ ggplot(summary_df, aes(x = Variable, y = median, color = group)) +
   )
 
 
-across_species_summary <- per_species_mean %>%
-  group_by(Variable) %>%
-  summarise(
-    mean_of_means = mean(mean_importance, na.rm = TRUE),
-    sd_of_means = sd(mean_importance, na.rm = TRUE),
-    min_of_means = min(mean_importance, na.rm = TRUE),
-    max_of_means = max(mean_importance, na.rm = TRUE),
-    n_species = n(),
-    .groups = "drop"
-  ) %>%
-  arrange(desc(mean_of_means))
+# across_species_summary <- per_species_mean %>%
+#   group_by(Variable) %>%
+#   summarise(
+#     mean_of_means = mean(mean_importance, na.rm = TRUE),
+#     sd_of_means = sd(mean_importance, na.rm = TRUE),
+#     min_of_means = min(mean_importance, na.rm = TRUE),
+#     max_of_means = max(mean_importance, na.rm = TRUE),
+#     n_species = n(),
+#     .groups = "drop"
+#   ) %>%
+#   arrange(desc(mean_of_means))
 
