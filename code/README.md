@@ -19,9 +19,10 @@ Study area: the Dangermond Preserve in Santa Barbara county located within the t
     * Herps and invertebrates data accessed on 04/30/2025.
     * Plants data accessed on 05/15/2025.
 * [02_BIEN_occ_data.R](../code/02_BIEN_occ_data.R)
-    * Purpose: to be filled.
+    * Purpose: step 1 -2 grab BIEN data for target species, and step 3 - 5 clean species data.
+    * Plants data accessed on 05/15/2025.
 * [03_Integrated_occ_dangermond_Portal.R](../code/03_Integrated_occ_dangermond_Portal.R)
-    * Purpose: grab data from the Dangermond Data Portal and clean species data.
+    * Purpose: grab data from the Dangermond Data Portal and Calflora and clean species data.
 * [04_GBIF_BIEN_DP_Cal_merge.R](../code/04_GBIF_BIEN_DP_Cal_merge.R)
     * Purpose: merge plant species data from multiple sources.
 * [05_mergeAnimalOcc.R](../code/05_mergeAnimalOcc.R)
