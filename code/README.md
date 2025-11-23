@@ -39,7 +39,8 @@ Example:
 | species latin name | longitude | latitude |
 
 
-## Envi_layer_elev_stack.R
+### Envi_layer_elev_stack.R
+
 The script section 1-5 generates slope, aspect, TRI, and flow accumulation layers from elevation (SRTM 30m) layer
 * Load and filter county boundaries
 * Mosaic and clip SRTM DEM
