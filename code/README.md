@@ -48,11 +48,11 @@ The script section 1-5 generates slope, aspect, TRI, and flow accumulation layer
 
 The script section 6 stacks climate and terrain layers
 * Load slope, aspect, flow accumulation, distance to coast, solar, and climate layers
-* Clips and resamples all layers to match a common raster template provided by Lei to standardizes projection (EPSG:2229), extent, and resolution
+* Clips and resamples all layers to match a common raster template provided by Lei to standardize projection (EPSG:2229), extent, and resolution
 * Stacks layers for both current (1980–2010) and future climate scenarios (2040–2070)
 * Saves outputs in organized folders under SDM_EnvLayers/Stack_Env/
 
-### Model
+### Models and evaluation
 #### Input data: 
 * OSpecies occurrence points
 * Species pseudo-absence points
@@ -62,9 +62,11 @@ The script section 6 stacks climate and terrain layers
 * [22_ssdm_model.R](../code/22_ssdm_model.R)
     * Purpose: Builds GAM, Random Forest, MaxEnt, and ensemble models for each species, and generates associated model statistics.
 * [23_model_projection.R](../code/23_model_projection.R)
-    * Purpose: Produces variable-importance plots and projects current and future species distributions, including associated uncertainty.
+    * Purpose: Projects future species distributions and calculates richness distribution for each taxon.
+* [24_model_evaluation.R](../code/24_model_evaluation.R)
+    * Purpose: Evaluates model uncertainty between scenarios, writes variable importance and AUC from the models, and plots percentage variable importance.
 
 #### Output data:
 * Model performance metrics, including AUC values
 * Variable-importance plots
-* Maps of current and projected future species distributions
+* Maps of current and projected future species distributions, including richness distribution.
