@@ -227,12 +227,15 @@ species_lookup <- tribble(
 ##  ---- (2) Read all sheet ----
 # Read the file which is the combination of exported variable importance tables for all types of species
 # There are three sheets in the file: allSpecies, Bird, plant
-sheets <- excel_sheets(here("results","evaluations","KeyHabitat","Varimp_all_species", "NewEnv_species_varimp_combined_shrub_herb.xlsx"))
+file_path <- here("results","evaluations","KeyHabitat","Varimp_all_species",
+                  "NewEnv_species_varimp_combined_shrub_herb.xlsx")
+
+sheets <- excel_sheets(file_path)
 sheets_to_read <- sheets[1:3]
 
 df_list <- lapply(sheets_to_read, function(sheet) {
-  read_excel(here("results","evaluations","KeyHabitat","Shrub" ,"NewEnv_species_varimp_combined_shrub.xlsx"), sheet = sheet) %>%
-    mutate(group = sheet)  
+  read_excel(file_path, sheet = sheet) %>%
+    mutate(group = sheet)
 })
 
 # Merge all required lists
@@ -384,7 +387,11 @@ ggplot(summary_df2, aes(x = Variable, y = median, color = group)) +
   )
 
 ## --------(7) Percentage variable importance plot for each species (Stacked barplot)-----
-p_a <- ggplot(df_avg1, aes(x = species_label, y = Importance_pct, fill = Variable)) +
+perc_plot <- 
+#  ggplot(df_avg1, aes(x = species_label, y = Importance_pct, fill = Variable)) + #This is for all taxa
+  df_avg1 %>% 
+  filter(group == "Plants") %>%
+  ggplot(aes(x = species_label, y = Importance_pct, fill = Variable)) +
   geom_col(stat = "identity") +         # stack bar （default position="stack"）
   facet_wrap(~ group, scales = "free_y", ncol = 1) +  # each group will be one raw
   coord_flip() +                        # flip coordinate：species is（y）
@@ -410,3 +417,16 @@ p_a <- ggplot(df_avg1, aes(x = species_label, y = Importance_pct, fill = Variabl
     )
   )
 
+
+## --------(8) Percentage variable importance plot for each taxon-----
+df_plants <- subset(df_avg1, group == "Plants")
+
+ggplot(df_plants, aes(x = Variable, y = Importance_pct)) +
+  geom_boxplot(fill = "#8AC926") +  
+  theme_bw(base_size = 13) +
+  labs(
+    title = "Variable importance (Plants only)",
+    x = NULL,
+    y = "Importance (%)"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
