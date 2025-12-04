@@ -55,11 +55,11 @@ We built a set of physical, terrain, and climate predictors for the tri-county r
 * Common raster template (`raster_template.tif`, EPSG:2229)
 
 #### R codes:
-* [11_climate_stack_baseline.R](../code/11_Stack_Raster_ClimateVaribale.R)
+* [11_climate_stack_baseline.R](../code/11_climate_stack_baseline.R)
   * Purpose: Preprocesses CHELSA baseline bioclimatic rasters, runs multicollinearity filtering, and saves the selected climate stack for modeling.
-* [12_env_layers_terrain_climate_stack.R](../code/12_Envi_layer_elev_stack.R)
+* [12_env_layers_terrain_climate_stack.R](../code/12_env_layers_terrain_climate_stack.R)
   * Purpose: Derives terrain, solar, and distance-to-coast layers, aligns them with the selected climate stack, and builds scenario-specific environmental stacks.
-* [13_full_env_stack.R](../code/13_full_Stack.R)
+* [13_full_env_stack.R](../code/13_full_env_stack.R)
   * Purpose: Extends the current environmental stack by adding any missing CHELSA bioclimatic variables to create a full baseline predictor stack.
 
 #### Output data:
