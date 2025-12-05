@@ -129,7 +129,10 @@ library(here)
 # Load raster template
 r_template <- rast(here("data", "env","raster_template.tif"))
 
-files <- list.files(here("data", "env","2041-2070-585"),
+#files <- list.files(here("data", "env","1980-2010"),
+#                    pattern = "CHELSA.*\\.tif$", full.names = TRUE)
+
+files <- list.files("E:/Data/Chelsa/2071-2100-370",
                     pattern = "CHELSA.*\\.tif$", full.names = TRUE)
 
 # Reprojection (keep same resolution and crs)
@@ -157,5 +160,5 @@ res(env_r_stack) == res(r_template)
 ext(env_r_stack) == ext(r_template)
 
 # Write out the rasters
-out_file <- here("data", "env", "final_env_ssp585_2041_2070_stack.tif")
+out_file <- here("data", "env", "final_env_ssp370_2071_2100_stack.tif")
 writeRaster(env_r_stack, out_file, overwrite = TRUE)
