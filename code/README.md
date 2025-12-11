@@ -1,6 +1,6 @@
 ## Codes
 
-Study area: the Dangermond Preserve in Santa Barbara county located within the tri-county region in southern California (Santa Barbara, Ventura, San Louis Obispo)
+Study area: the Dangermond Preserve in Santa Barbara county located within the tri-county region in southern California (Santa Barbara, Ventura, San Luis Obispo)
 
 ### Species occurrence data pulling and cleaning
 
@@ -9,7 +9,7 @@ Study area: the Dangermond Preserve in Santa Barbara county located within the t
 #### Input data: 
 * Integrated Resources Management Plan (IRMP): get special status species
 * IUCN red list range maps: get specieal status species
-* CalFlora: get specieal status species
+* CalFlora: get special status species
 
 #### R codes:
 * [01_GBIF_data_pulling.R](../code/01_GBIF_data_pulling.R)
