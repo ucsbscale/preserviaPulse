@@ -93,4 +93,4 @@ We built a set of physical, terrain, and climate predictors for the tri-county r
 #### Rangebagging Models:
 * Modeled three low occurrence species (defined as < 10 occurrences) using the bssdm package and rangebagging approach.
 * [41_LowOccurence_DataCleaning.R](../code/41_LowOccurence_DataCleaning.R) compiles and cleans CNDDB data for low occurrence species.
-* [42_LowOccurence_Rangebagging.R](../code/42_LowOccurence_Rangebagging.R) runs rangebagging models for each species and calculates the AUC score for each model.
+* [42_LowOccurence_RangebaggingModels.R](../code/42_LowOccurence_Rangebagging.R) runs rangebagging models for each species and calculates the AUC score for each model.
