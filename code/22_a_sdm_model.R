@@ -1,7 +1,7 @@
 ## Purpose of script: Species Distribution Model
 ## Authors: GEOG 274
 ## Date: Spring, 2025
-## Credits to: Yanni Zhan
+## Credits to: Yanni Zhan, Xue Yan, Wenxin Yang, Yifei Liu
 
 library(mgcv)
 library(dismo)
@@ -373,5 +373,6 @@ identical(a@sdms[[2]]@projection,maxent_pred_all)
 plot(a@sdms[[2]]@projection)
 
 plot(a@sdms[[1]]@projection)
+
 
 
