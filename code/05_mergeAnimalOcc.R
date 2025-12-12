@@ -1,6 +1,7 @@
 ## Purpose of script: merge multi-source data for animal species
 ## Authors: GEOG 274
 ## Date: Spring, 2025
+## Credits to: Wenxin Yang, Xue Yan
 
 library(here)
 library(sf)
