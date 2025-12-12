@@ -1,3 +1,8 @@
+## Purpose of script: K-fold evaluation for species distribution model
+## Authors: GEOG 274
+## Date: Summer, 2025
+## Credits to: Yanni Zhan
+
 library(mgcv)
 library(dismo)
 library(randomForest)
@@ -435,4 +440,5 @@ identical(a@sdms[[2]]@projection,maxent_pred_all)
 plot(a@sdms[[2]]@projection)
 
 plot(a@sdms[[1]]@projection)
+
 
