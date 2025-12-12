@@ -1,6 +1,6 @@
 ## Purpose: Preprocess CHELSA baseline climate variables (1981–2010),
 ##          run correlation analysis, and create a selected variable stack.
-## Author: Zijun Li, Xue Yan, Yifei Liu
+## Author: Zijun Li, Yifei Liu
 ## Date: "2025-05-12"
 ## Output: html_document
 
@@ -123,4 +123,5 @@ message("  selected: ", sel_hist_file)
 # processed with the same pattern and saved with analogous file names, e.g.:
 #   projected_selectedbios_2040_2070_GFDL_SSP126_stack.tif
 #   projected_selectedbios_2040_2070_GFDL_SSP370_stack.tif
+
 #   projected_selectedbios_2040_2070_GFDL_SSP585_stack.tif
