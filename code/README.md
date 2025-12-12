@@ -84,7 +84,7 @@ We built a set of physical, terrain, and climate predictors for the tri-county r
     * Purpose: K-fold evaluation for models.
 * [23_model_projection.R](../code/23_model_projection.R)
     * Purpose: Projects future species distributions and calculates richness distribution for each taxon.
-* [24_model_evaluation.R](../code/24_model_evaluation.R)
+* [24_model_evaluation_summary.R](../code/24_model_evaluation_summary.R)
     * Purpose: Evaluates model uncertainty between scenarios, writes variable importance and AUC from the models, and plots percentage variable importance.
 
 #### Output data:
