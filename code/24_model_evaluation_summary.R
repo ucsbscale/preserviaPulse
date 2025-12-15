@@ -77,8 +77,6 @@ uncertainty_results <- lapply(species_list, function(sp) {
 
 # -------------2. Write variable importance and AUC from the models-------
 # Order variables
-# var_order <- c("bio1", "bio3", "bio5", "bio6", "bio14", "bio15", "bio16", "bio18")
-
 var_order <- c("bio1", "bio3", "bio5", "bio6", "bio15", "bio17", "bio18", "bio19", 
                "slope", "aspect", "flow_acc", "solar")
 
@@ -190,7 +188,7 @@ if (length(all_auc) > 0) {
 
 
 # ----3. Plot ----
-##  ---- (1) Organize Species scientific name and common name ----
+##  ---- (0) Organize Species scientific name and common name ----
 species_lookup <- tribble(
   ~Latin, ~Common,
   
@@ -224,7 +222,8 @@ species_lookup <- tribble(
   "Danaus plexippus", "Monarch butterfly",
   "Puma concolor", "Mountain Lion"
 )
-##  ---- (2) Read all sheet ----
+
+##  ---- (1) Read all sheet ----
 # Read the file which is the combination of exported variable importance tables for all types of species
 # There are three sheets in the file: allSpecies, Bird, plant
 file_path <- here("results","evaluations","KeyHabitat","Varimp_all_species",
@@ -241,7 +240,7 @@ df_list <- lapply(sheets_to_read, function(sheet) {
 # Merge all required lists
 df_all <- bind_rows(df_list)
 
-# Step 2. species × model normalization
+# species × model normalization
 df_scaled <- df_all %>%
   group_by(group, species, model) %>%
   mutate(
@@ -255,7 +254,7 @@ df_scaled <- df_all %>%
   ) %>%
   ungroup()
 
-## ---- (3) convert to percentage（total = 100）----
+## ---- (2) convert to percentage（total = 100）----
 df_pct <- df_scaled %>%
   group_by(group, species, model) %>%
   mutate(
@@ -283,10 +282,6 @@ df_avg <- df_pct %>%
 
 desired_order <- c("bio1", "bio3", "bio5", "bio6", "bio15", "bio17", "bio18", "bio19", 
                    "slope", "aspect", "flow_acc", "solar")
-
-# desired_order <- c("bio14", "bio15", "bio16", "bio18",
-#                   "bio1", "bio3", "bio5", "bio6") # Might want to change the variable names 
-
 
 ## organize data
 df_avg1 <- df_avg %>%
@@ -384,37 +379,6 @@ ggplot(summary_df2, aes(x = Variable, y = median, color = group)) +
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
     axis.text.x = element_text(angle = 45, hjust = 1)
-  )
-
-## --------(7) Percentage variable importance plot for each species (Stacked barplot)-----
-perc_plot <- 
-#  ggplot(df_avg1, aes(x = species_label, y = Importance_pct, fill = Variable)) + #This is for all taxa
-  df_avg1 %>% 
-  filter(group == "Plants") %>%
-  ggplot(aes(x = species_label, y = Importance_pct, fill = Variable)) +
-  geom_col(stat = "identity") +         # stack bar （default position="stack"）
-  facet_wrap(~ group, scales = "free_y", ncol = 1) +  # each group will be one raw
-  coord_flip() +                        # flip coordinate：species is（y）
-  labs(x = NULL, y = "Percentage contribution (%)", fill = "Variable") +
-  theme_bw(base_size = 13) +
-  theme(
-    axis.text.y = element_text(size = 10),   # adjust the size of species name 
-    panel.grid.major.x = element_blank(),
-    strip.background = element_rect(fill = "grey90", color = NA),
-    strip.text = element_text(size = 13, face = "bold")
-  ) +
-  scale_fill_manual(
-    values = c(
-      "bio14" = "#440154",  
-      "bio15" ="#3B528B",  
-      "bio16" = "#21908C",  
-      "bio18" = "#5DC863",  
-      "bio1" = "#FDE725",  
-      "bio3" = "#F8961E",  
-      "bio5" = "#D94801", 
-      "bio6" = "#8C2D04",
-      breaks = desired_order 
-    )
   )
 
 
