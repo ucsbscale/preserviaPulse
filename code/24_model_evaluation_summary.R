@@ -1,5 +1,5 @@
 ## Purpose of script: 
-## 1. Model uncertainty between scenarios
+## 1. Model uncertainty between scenarios (optional)
 ## 2. Write variable importance and AUC from the models
 ## 3. Plot percentage variable importance
 
