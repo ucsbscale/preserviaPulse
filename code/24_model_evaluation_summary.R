@@ -5,7 +5,7 @@
 
 ## Authors: GEOG 274
 ## Date: Spring, 2025
-## Credits to:  Xue Yan
+## Credits to:  Xue Yan, Yifei Liu, Yanni Zhan, Wenxin Yang
 
 library(tidyverse)   
 library(readxl)
